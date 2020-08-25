@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloController {
     @RequestMapping("/quick")
-    public String HelloTest(){
-        return"hello";
+    public String HelloTest() {
+        return "hello";
     }
 }

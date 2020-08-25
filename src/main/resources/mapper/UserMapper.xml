@@ -73,4 +73,17 @@
     select id, username, password, face-img, face-img-big, nick-name, qrcode, cid
     from t_user
   </select>
+
+  <select id="selectOne" parameterType="com.shu.pojo.User" resultMap="BaseResultMap">
+    select *
+    from t_user
+    where username = #{username}
+  </select>
+
+  <select id="varifyUser" parameterType="com.shu.pojo.User" resultMap="BaseResultMap">
+    select *
+    from t_user
+    where username = #{username} and  password = #{password}
+  </select>
+
 </mapper>
