@@ -61,4 +61,13 @@
     select id, my_user_id, my_friend_user_id
     from t_my_friend
   </select>
+
+  <select id="selectOne" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select *
+    from t_my_friend
+    where  my_user_id = #{myUserId,jdbcType=VARCHAR},
+           my_friend_user_id = #{myFriendUserId,jdbcType=VARCHAR}
+  </select>
+
+
 </mapper>

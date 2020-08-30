@@ -1,5 +1,6 @@
 package com.shu.controller;
 
+import com.shu.enums.SearchFriendsStatusEnum;
 import com.shu.pojo.User;
 import com.shu.pojo.vo.UserVO;
 import com.shu.service.UserService;
@@ -41,6 +42,7 @@ public class UserController {
         if (userIsExist) {
             // 2.1 登录
             userResult = userService.queryUserForLogin(user.getUsername(), user.getPassword());
+
             if (userResult == null) {
                 return JSONResult.errorMsg("用户名或密码不正确");
             }
@@ -68,5 +70,28 @@ public class UserController {
         return JSONResult.ok(result);
     }
 
+
+    // 搜索好友
+    @PostMapping("/search")
+    public JSONResult searchUser( String myUserId, String friendUserName) throws Exception {
+
+        // 0. 判断 myUserId friendUsername 不能为空
+        if (StringUtils.isBlank(myUserId) || StringUtils.isBlank(friendUserName)) {
+            return JSONResult.errorMsg("");
+        }
+        // 前置条件 - 1. 搜索的用户如果不存在，返回[无此用户]
+        // 前置条件 - 2. 搜索账号是你自己，返回[不能添加自己]
+        // 前置条件 - 3. 搜索的朋友已经是你的好友，返回[该用户已经是你的好友]
+        Integer status = userService.preconditionSearchFriends(myUserId, friendUserName);
+        if (status == SearchFriendsStatusEnum.SUCCESS.status) {
+            User user = userService.queryUserInfoByUsername(friendUserName);
+            UserVO userVO = new UserVO();
+            BeanUtils.copyProperties(user, userVO);
+            return JSONResult.ok(userVO);
+        } else {
+            String errorMsg = SearchFriendsStatusEnum.getMsgByKey(status);
+            return JSONResult.errorMsg(errorMsg);
+        }
+    }
 
 }

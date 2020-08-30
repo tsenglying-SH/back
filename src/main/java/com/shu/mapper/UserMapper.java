@@ -47,5 +47,7 @@ public interface UserMapper {
     int updateByPrimaryKey(User record);
 
     User selectOne(User user);
+
+    // 验证用户名和密码是否匹配
     User varifyUser(User user);
 }

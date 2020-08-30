@@ -19,5 +19,7 @@ public interface UserService {
     // 搜索朋友的前置条件
     Integer preconditionSearchFriends(String myUserId, String friendUsername);
 
+    // 根据姓名查找用户
     User queryUserInfoByUsername(String username);
+
 }
