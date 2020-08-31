@@ -1,5 +1,6 @@
 package com.shu.service;
 
+import com.shu.netty.ChatMsg;
 import com.shu.pojo.User;
 import com.shu.pojo.vo.FriendRequestVO;
 import com.shu.pojo.vo.MyFriendVO;
@@ -47,4 +48,18 @@ public interface UserService {
     //查询好友列表
      List<MyFriendVO> queryMyFriends(String userId);
 
+    /**
+     * @Description: 保存聊天消息到数据库
+     */
+    public String saveMsg(ChatMsg chatMsg);
+
+    /**
+     * @Description: 批量签收消息
+     */
+     void updateMsgSigned(List<String> msgIdList);
+
+    /**
+     * @Description: 获取未签收消息列表
+     */
+    public List<com.shu.pojo.ChatMsg> getUnReadMsgList(String acceptUserId);
 }

@@ -69,4 +69,12 @@
     select id, send_user_id, receive_user_id, msg, sign_flag, creat_time
     from t_chat_msg
   </select>
+
+
+  <select id="selectUnsignedMsg" resultMap="BaseResultMap" >
+
+    select id, send_user_id, receive_user_id, msg, sign_flag, creat_time
+    from t_chat_msg
+    where receive_user_id = #{receiveUserId,jdbcType=VARCHAR} and sign_flag=0
+  </select>
 </mapper>

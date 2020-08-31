@@ -38,4 +38,7 @@ public interface UserMapper {
 
     // 查询好友列表
     List<MyFriendVO> queryMyFriends(String userId);
+
+    // 批量签收消息
+    void batchUpdateMsgSigned(List<String> msgIdList);
 }

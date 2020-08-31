@@ -177,4 +177,18 @@ public class UserController {
         return JSONResult.ok(myFirends);
     }
 
+    // 用户手机端获取未签收消息列表
+    @PostMapping("/getUnReadMsgList")
+    public JSONResult getUnReadMsgList(String receiveUserId) {
+        // 0. userId 判断不能为空
+        if (StringUtils.isBlank(receiveUserId)) {
+            return JSONResult.errorMsg("");
+        }
+
+        // 查询列表
+        List<com.shu.pojo.ChatMsg> unreadMsgList = userService.getUnReadMsgList(receiveUserId);
+
+        return JSONResult.ok(unreadMsgList);
+    }
+
 }

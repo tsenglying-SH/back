@@ -118,4 +118,14 @@
 
   </select>
 
+<!--批量签收消息-->
+  <update id="batchUpdateMsgSigned">
+
+    update t_chat_msg set sign_flag = 1 where id in
+          <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+
+  </update>
+
 </mapper>

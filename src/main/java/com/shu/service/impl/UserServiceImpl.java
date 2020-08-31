@@ -1,15 +1,24 @@
 package com.shu.service.impl;
 
+import com.shu.enums.MsgActionEnum;
+import com.shu.enums.MsgSignFlagEnum;
 import com.shu.enums.SearchFriendsStatusEnum;
+import com.shu.mapper.ChatMsgMapper;
 import com.shu.mapper.FrientRequestMapper;
 import com.shu.mapper.MyFriendMapper;
 import com.shu.mapper.UserMapper;
+import com.shu.netty.ChatMsg;
+import com.shu.netty.DataContent;
+import com.shu.netty.UserChannelRel;
 import com.shu.pojo.FrientRequest;
 import com.shu.pojo.MyFriend;
 import com.shu.pojo.User;
 import com.shu.pojo.vo.FriendRequestVO;
 import com.shu.pojo.vo.MyFriendVO;
 import com.shu.service.UserService;
+import com.shu.util.JsonUtils;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -37,6 +46,8 @@ public class UserServiceImpl implements UserService {
     private MyFriendMapper myFriendMapper;
     @Autowired
     private FrientRequestMapper frientRequestMapper;
+    @Autowired
+    private ChatMsgMapper chatMsgMapper;
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
@@ -157,6 +168,18 @@ public class UserServiceImpl implements UserService {
         saveFriends(sendUserId,acceptUserId);
         saveFriends(acceptUserId,sendUserId);
         deleteFriendRequest(sendUserId, acceptUserId);
+
+        Channel sendChannel = UserChannelRel.get(sendUserId);
+        if (sendChannel != null) {
+            // 使用websocket主动推送消息到请求发起者，更新他的通讯录列表为最新
+            DataContent dataContent = new DataContent();
+            dataContent.setAction(MsgActionEnum.PULL_FRIEND.type);
+
+            sendChannel.writeAndFlush(
+                    new TextWebSocketFrame(
+                            JsonUtils.objectToJson(dataContent)));
+        }
+
     }
 
     // 在t_my_friend保存好友
@@ -178,4 +201,45 @@ public class UserServiceImpl implements UserService {
         return myFirends;
     }
 
+
+    //保存聊天消息到数据库
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public String saveMsg(ChatMsg chatMsg) {
+
+        com.shu.pojo.ChatMsg msgDB = new com.shu.pojo.ChatMsg();
+        String msgId = UUID.randomUUID().toString().substring(24);
+        msgDB.setId(msgId);
+        msgDB.setReceiveUserId(chatMsg.getReceiverId());
+        msgDB.setSendUserId(chatMsg.getSenderId());
+        msgDB.setCreatTime(new Date());
+        msgDB.setSignFlag(MsgSignFlagEnum.unsign.type);
+        msgDB.setMsg(chatMsg.getMsg());
+        chatMsgMapper.insert(msgDB);
+
+        return msgId;
+    }
+
+    // 批量签收消息
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void updateMsgSigned(List<String> msgIdList) {
+
+        userMapper.batchUpdateMsgSigned(msgIdList);
+    }
+
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public List<com.shu.pojo.ChatMsg> getUnReadMsgList(String receiveUserId) {
+/*
+        Example chatExample = new Example(com.imooc.pojo.ChatMsg.class);
+        Criteria chatCriteria = chatExample.createCriteria();
+        chatCriteria.andEqualTo("signFlag", 0);
+        chatCriteria.andEqualTo("acceptUserId", acceptUserId);*/
+
+        List<com.shu.pojo.ChatMsg> result = chatMsgMapper.selectUnsignedMsg(receiveUserId);
+
+        return result;
+    }
 }
